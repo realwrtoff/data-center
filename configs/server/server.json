@@ -1,0 +1,26 @@
+{
+    "service": {
+        "port": ":7060"
+    },
+    "redis": {
+        "addr": "127.0.0.1:6379",
+        "password": ""
+    },
+    "mysql": {
+        "host": "127.0.0.1",
+        "port": "3306",
+        "userName": "user",
+        "password": "123456",
+        "dbName": "db"
+    },
+    "es": {
+        "uri": "http://127.0.0.1:9200"
+    },
+    "logger": {
+        "run": {
+            "formatter": "text",
+            "filename": "log/runlog",
+            "maxAge": "24h"
+        }
+    }
+}
