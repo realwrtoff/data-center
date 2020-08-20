@@ -12,7 +12,7 @@ all: vendor output test
 
 output: cmd/*/*.go internal/*/*.go scripts/version.sh Makefile vendor
 	@echo "compile"
-	@go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -ldflags "-X 'main.AppVersion=`sh scripts/version.sh`'" cmd/${binary}/main.go && \
+	@go build -ldflags "-X 'main.AppVersion=`sh scripts/version.sh`'" cmd/${binary}/main.go && \
 	mkdir -p output/${repository}/bin && mv main output/${repository}/bin/${binary} && \
 	mkdir -p output/${repository}/configs && cp configs/${binary}/* output/${repository}/configs && \
 	mkdir -p output/${repository}/log
