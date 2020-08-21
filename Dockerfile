@@ -20,5 +20,4 @@ FROM centos:centos7
 COPY --from=builder /data-center/output/ /
 EXPOSE 7060
 WORKDIR /data-center
-# CMD [ "bin/server", "-c", "configs/server.json" ]
-CMD [ "/bin/echo" ]
+CMD [ "bin/server", "-c", "configs/server.json" ]
