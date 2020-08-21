@@ -20,4 +20,4 @@ FROM scratch
 COPY --from=builder /data-center/output/data-center /
 EXPOSE 7060
 WORKDIR /data-center
-CMD [ "bin/server", "-c", "configs/server.json" ]
+CMD ["/bin/bash", "-c", "echo hello"]
