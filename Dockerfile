@@ -17,7 +17,7 @@ RUN git clone https://github.com/realwrtoff/data-center.git \
     && cd data-center && git pull && make output
 
 FROM scratch
-COPY --from=builder /data-center/output/data-center /
+COPY --from=builder /data-center/output/data-center /data-center/
 EXPOSE 7060
-WORKDIR /data-center
-CMD ["/bin/ls"]
+WORKDIR data-center
+CMD [ "bin/server", "-c", "configs/server.json" ]
