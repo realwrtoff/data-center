@@ -34,6 +34,7 @@ type LegalInfo struct {
 	Alias           string    `json:"alias,omitempty"`
 	Pid             int64     `json:"pid,omitempty"`
 	Role            string    `json:"role,omitempty"`
+	CompanyIds      []int64   `json:"companyIds,omitempty"`
 }
 
 type TagS struct {
@@ -57,7 +58,7 @@ type HolderS struct {
 	Capital []CapitalS `json:"capital,omitempty"`
 }
 
-type StuffS struct {
+type StaffS struct {
 	Toco     int8     `json:"toco,omitempty"`
 	Id       int64    `json:"id,omitempty"`
 	Name     string   `json:"name,omitempty"`
@@ -69,8 +70,8 @@ type StuffS struct {
 }
 
 type CompanyInfo struct {
-	CompanyId              int64     `json:"companyd,omitempty"`
-	Name                   string    `json:"name,omitempty"`
+	CompanyId              int64     `json:"companyId"`
+	Name                   string    `json:"name"`
 	Alias                  string    `json:"alias,omitempty"`
 	LegalPersonId          int64     `json:"legalPersonId,omitempty"`
 	LegalPersonName        string    `json:"legalPersonName,omitempty"`
@@ -96,7 +97,7 @@ type CompanyInfo struct {
 	Postcode               string    `json:"postcode,omitempty"`
 	RegStatus              string    `json:"regStatus,omitempty"`
 	RegTime                string    `json:"regTime,omitempty"`
-	ApprovedTime           int64     `json:"approvedTime,omitempty"`
+	ApprovedTime           string    `json:"approvedTime,omitempty"`
 	RegNumber              string    `json:"regNumber,omitempty"`
 	RegInstitute           string    `json:"regInstitute,omitempty"`
 	RegLocation            string    `json:"regLocation,omitempty"`
@@ -117,13 +118,13 @@ type CompanyInfo struct {
 	IsMicroEnt             int8      `json:"isMicroEnt,omitempty"`
 	InverstStatus          string    `json:"inverstStatus,omitempty"`
 	P2p                    string    `json:"p2p,omitempty"`
-	Score                  string    `json:"score,omitempty"`
+	Score                  float32    `json:"score,omitempty"`
 	BaseInfo               string    `json:"baseInfo,omitempty"`
 	BusinessScope          string    `json:"businessScope,omitempty"`
-	Staff                  []StuffS  `json:"staff,omitempty"`
+	Staff                  []StaffS  `json:"staff,omitempty"`
 	Holder                 []HolderS `json:"holder,omitempty"`
 	LegalInfo              LegalInfo `json:"legalInfo,omitempty"`
-	Updatetime             int64     `json:"updatetime,omitempty"`
+	Updatetime             string    `json:"updatetime,omitempty"`
 	GeoHash                string    `json:"geo_hash,omitempty"`
 	GeoLatLon              Point     `json:"geo_lat_lon,omitempty"`
 }

@@ -1,4 +1,4 @@
-FROM centos:centos7
+FROM centos:centos7 as builder
 
 RUN yum install -y make \
     && yum install -y git gcc \
@@ -16,7 +16,8 @@ ENV GOROOT=/usr/local/go
 RUN git clone https://github.com/realwrtoff/data-center.git \
     && cd data-center && git pull && make output
 
+FROM scratch
+COPY --from=builder /data-center/output/data-center /
 EXPOSE 7060
-
-WORKDIR /data-center/output/data-center
+WORKDIR /data-center
 CMD [ "bin/server", "-c", "configs/server.json" ]

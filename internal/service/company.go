@@ -23,6 +23,27 @@ type CompanyIdReq struct {
 	CompanyId string `form:"company_id" json:"company_id,omitempty"`
 }
 
+func (s *Service) boolQ() *elastic.BoolQuery {
+	boolQ := elastic.NewBoolQuery()
+	boolQ.Should(elastic.NewTermQuery("regStatus", "存续"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "在业"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "在营企业"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "开业"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "正常"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "在营"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "正常登记"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "登记成立"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "登记"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", " 正常"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "正常执业"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "已开业"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "正常在业"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "核准许可登记"))
+	boolQ.Should(elastic.NewTermQuery("regStatus", "正常营业"))
+	boolQ.MinimumNumberShouldMatch(1)
+	return boolQ
+}
+
 func (s *Service) CompanySearch(c *gin.Context) {
 	req := &NameSearchReq{}
 
@@ -44,11 +65,13 @@ func (s *Service) CompanySearch(c *gin.Context) {
 
 	var searchRes *elastic.SearchResult
 	var err error
+	boolQ := s.boolQ()
 	if len(req.Name) > 0 {
-		query := elastic.NewMatchQuery("name", req.Name)
+		query := elastic.NewMatchPhrasePrefixQuery("name", req.Name)
+		boolQ.Must(query)
 		searchRes, err = s.es.Search(model.ComapnyEsIndex).
 			TrackTotalHits(true).
-			Query(query).
+			Query(boolQ).
 			Size(req.Size).
 			From((req.Page - 1) * req.Size).
 			Do(context.Background())
@@ -142,6 +165,25 @@ func (s *Service) CompanyDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+func (s *Service)esSearch(query elastic.Query) (*elastic.SearchResult, error) {
+	var searchRes *elastic.SearchResult
+	var err error
+	searchRes, err = s.es.Search(model.ComapnyEsIndex).
+		TrackTotalHits(true).
+		Query(query).
+		Size(model.DefaultEsSize).
+		Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	if searchRes == nil || searchRes.Hits == nil ||
+		searchRes.Hits.TotalHits == nil ||
+		searchRes.Hits.TotalHits.Value == 0 {
+		return nil, nil
+	}
+	return searchRes, nil
+}
+
 func (s *Service) PersonSearch(c *gin.Context) {
 	req := &NameSearchReq{}
 
@@ -158,30 +200,33 @@ func (s *Service) PersonSearch(c *gin.Context) {
 	var searchRes *elastic.SearchResult
 	var err error
 
-	queryName := elastic.NewMatchQuery("legalInfo.name", req.Name)
-	query := elastic.NewNestedQuery("legalInfo", queryName)
-	searchRes, err = s.es.Search(model.ComapnyEsIndex).
-		TrackTotalHits(true).
-		Query(query).
-		Size(model.DefaultEsSize).
-		Do(context.Background())
-
+	// 根据法人名称查询一次
+	queryName := elastic.NewTermQuery("legalPersonName", req.Name)
+	searchRes, err = s.esSearch(queryName)
 	if err != nil {
 		res.Message = err.Error()
 		c.JSON(http.StatusOK, res)
 		return
 	}
-
-	if searchRes == nil || searchRes.Hits == nil ||
-		searchRes.Hits.TotalHits == nil ||
-		searchRes.Hits.TotalHits.Value == 0 {
+	if searchRes == nil {
+		// 根据职员名称再查询一次
+		queryStaff := elastic.NewTermQuery("staff.name", req.Name)
+		nestedQuery := elastic.NewNestedQuery("staff", queryStaff)
+		searchRes, err = s.esSearch(nestedQuery)
+		if err != nil {
+			res.Message = err.Error()
+			c.JSON(http.StatusOK, res)
+			return
+		}
+	}
+	if searchRes == nil {
 		res.Message = "No result found"
 		c.JSON(http.StatusOK, res)
 		return
 	}
 
-	var items []model.LegalInfo
-	cidsMap := make(map[string]int)
+	itemMap := make(map[string]model.LegalInfo)
+	cidsMap := make(map[string][]int64)
 	for _, hit := range searchRes.Hits.Hits {
 		var compInfo model.CompanyInfo
 		err := json.Unmarshal(hit.Source, &compInfo)
@@ -190,13 +235,23 @@ func (s *Service) PersonSearch(c *gin.Context) {
 			continue
 		}
 		var cids string
+		// 根据office里的cid集合做去重
 		for _, office := range compInfo.LegalInfo.Office {
 			cids += fmt.Sprintf("%d,", office.Cid)
 		}
 		if _, ok := cidsMap[cids]; !ok {
-			cidsMap[cids] = 1
-			items = append(items, compInfo.LegalInfo)
+			cidsMap[cids] = append(cidsMap[cids], compInfo.CompanyId)
+			itemMap[cids] = compInfo.LegalInfo
+		} else {
+			cidsMap[cids] = append(cidsMap[cids], compInfo.CompanyId)
 		}
+	}
+
+	// 转成列表结构, 并给companyIds赋值
+	var items []model.LegalInfo
+	for cids, item := range itemMap {
+		item.CompanyIds = cidsMap[cids]
+		items = append(items, item)
 	}
 
 	pageDataRes := &PageDataRes{
