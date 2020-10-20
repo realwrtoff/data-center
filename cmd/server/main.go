@@ -105,6 +105,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	// 设置连接池信息
+	// mdb.DB().SetMaxIdleConns(10)
+	// mdb.DB().SetConnMaxLifetime(100)
 
 	es, err := elastic.NewClient(
 		elastic.SetURL(options.Es.Uri),
@@ -135,6 +138,7 @@ func main() {
 		ctx.String(200, "ok")
 	})
 	router.InitCompanyRouter(r, svc)
+	router.InitProjectRouter(r, svc)
 
 	// run server
 	server := &http.Server{

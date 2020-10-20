@@ -64,7 +64,8 @@ func JWT() gin.HandlerFunc {
 		var data interface{}
 
 		code = SUCCESS
-		token := c.Query("token")
+		token := c.GetHeader("token")
+		// token := c.Query("token")
 		if token == "" {
 			code = InvalidParams
 		} else {

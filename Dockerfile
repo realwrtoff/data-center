@@ -16,7 +16,7 @@ ENV GOROOT=/usr/local/go
 RUN git clone https://github.com/realwrtoff/data-center.git \
     && cd data-center && git pull && make output
 
-FROM scratch
+FROM centos:centos7
 COPY --from=builder /data-center/output/ /
 EXPOSE 7060
 WORKDIR /data-center
