@@ -70,3 +70,25 @@ func (s *Service) ProjectDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+func (s *Service) ProjectInvest(c *gin.Context) {
+	req := &ProjectReq{}
+
+	if err := c.Bind(req); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	res := &BasicRes{
+		Code:    200,
+		Message: "success",
+	}
+	var err error
+	var invests []model.NewSeedProjectInvest
+	err = s.mdb.Where("project_id = ?", req.ProjectId).Find(&invests).Error
+	if err != nil {
+		res.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, res)
+	}
+	res.Data = invests
+	c.JSON(http.StatusOK, res)
+}
+

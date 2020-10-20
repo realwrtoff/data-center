@@ -11,5 +11,6 @@ func InitProjectRouter(Router *gin.Engine, svc *service.Service) {
 	{
 		NewSeedGroup.GET("search", svc.ProjectSearch)
 		NewSeedGroup.GET("detail", svc.ProjectDetail)
+		NewSeedGroup.GET("invest", svc.ProjectInvest)
 	}
 }

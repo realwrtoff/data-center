@@ -105,10 +105,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	// 设定默认为不给表加s
+	mdb.SingularTable(true)
 	// 设置连接池信息
 	// mdb.DB().SetMaxIdleConns(10)
 	// mdb.DB().SetConnMaxLifetime(100)
-
+	runLog.Info("connect mysql %s:%s ok", options.Mysql.Host, options.Mysql.Port)
 	es, err := elastic.NewClient(
 		elastic.SetURL(options.Es.Uri),
 		elastic.SetSniff(false),
@@ -116,6 +118,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	runLog.Info("connect elastic search ok")
+
 
 	watcher := scheduler.NewWatcher(rds)
 	go watcher.Run()
