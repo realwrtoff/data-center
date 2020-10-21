@@ -1,8 +1,4 @@
-package model
-
-import (
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-)
+package project
 
 type NewSeedProject struct {
 	// Id              int       `gorm:"type:int(11) auto_increment;primary_key" json:"id"`
@@ -21,6 +17,10 @@ type NewSeedProject struct {
 	// UpdateTime      time.Time `gorm:"default:null" json:"update_time"`
 }
 
+// 自定义表名
+func (NewSeedProject) TableName() string {
+	return "newseed_project"
+}
 
 type NewSeedProjectInvest struct {
 	ProjectId int    `json:"project_id"`
@@ -31,11 +31,6 @@ type NewSeedProjectInvest struct {
 	Currency  string `json:"currency"`
 	RoundDate string `json:"round_date"`
 	Investor  string `json:"investor"`
-}
-
-// 自定义表名
-func (NewSeedProject) TableName() string {
-	return "newseed_project"
 }
 
 func (NewSeedProjectInvest) TableName() string {

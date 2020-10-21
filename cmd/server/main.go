@@ -110,7 +110,7 @@ func main() {
 	// 设置连接池信息
 	// mdb.DB().SetMaxIdleConns(10)
 	// mdb.DB().SetConnMaxLifetime(100)
-	runLog.Info("connect mysql %s:%s ok", options.Mysql.Host, options.Mysql.Port)
+	runLog.Infof("connect mysql %s:%s ok", options.Mysql.Host, options.Mysql.Port)
 	es, err := elastic.NewClient(
 		elastic.SetURL(options.Es.Uri),
 		elastic.SetSniff(false),
